@@ -10,7 +10,12 @@
 # @Params: $1 the IP to set
 set_hosts_variable_ip() {
     local PLACEHOLDER_HOST_NAME='variable.ip'
-    sudo sed -i ".bak" "s/^\(.*\) ${PLACEHOLDER_HOST_NAME}/${1}/" /etc/hosts
+    local placeholer_line
+    # TODO: Do not update hosts files if no change
+    if placeholer_line=$(cat /etc/hosts | grep ${PLACEHOLDER_HOST_NAME}); then
+        new_placeholder_line=$(echo "${placeholer_line}" | { printf "${1} "; cut -d " " -f2-; } )
+        sudo sed -i '.bak' "s~${placeholer_line}~${new_placeholder_line}~" /etc/hosts
+    fi
 }
 
 # Enable you to grab the "prefered" (the interface with an IP which resolves first) interface
@@ -30,6 +35,7 @@ get_prefered_interface_ip() {
     for possible_interface in "${possible_interfaces[@]}"; do
         if possible_config=$(ifconfig ${possible_interface} 2> /dev/null); then
             echo "${possible_config}" | grep 'inet ' | awk '{print $2}'
+            break
         fi
     done
 }
