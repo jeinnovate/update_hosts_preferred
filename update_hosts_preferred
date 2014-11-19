@@ -18,11 +18,11 @@ set_hosts_variable_ip() {
     fi
 }
 
-# Enable you to grab the "prefered" (the interface with an IP which resolves first) interface
+# Enable you to grab the "preferred" (the interface with an IP which resolves first) interface
 # so you can use your top network interface (i.e. ethernet tends to work better than wifi).
 # This only works on MAC OS X for now.
 # TODO: Add debian based Linux support
-get_prefered_interface_ip() {
+get_preferred_interface_ip() {
     local NETWORK_SEARCH_STRING='Wi-Fi|Thunderbolt Ethernet'
     local networks=$(networksetup -listnetworkserviceorder)
     local interfaces_info=$(echo "${networks}" | awk "/${NETWORK_SEARCH_STRING}/{getline; print;}")
@@ -40,10 +40,10 @@ get_prefered_interface_ip() {
     done
 }
 
-# Updates the hosts file with the prefered interface ip
-update_hosts_prefered() {
-    set_hosts_variable_ip $(get_prefered_interface_ip)
+# Updates the hosts file with the preferred interface ip
+update_hosts_preferred() {
+    set_hosts_variable_ip $(get_preferred_interface_ip)
 }
 
-update_hosts_prefered
+update_hosts_preferred
 
