@@ -30,6 +30,7 @@ get_preferred_interface_ip() {
     local networks=$(networksetup -listnetworkserviceorder)
     local interfaces_info=$(echo "${networks}" | awk "/${NETWORK_SEARCH_STRING}/{getline; print;}")
     local possible_interfaces=()
+    local possible_ip
 
     while read -r interface_info; do
         possible_interfaces+=($(echo ${interface_info} | sed "s/.*Device: \(en[[:digit:]]\)).*/\1/"))
@@ -37,10 +38,17 @@ get_preferred_interface_ip() {
 
     for possible_interface in "${possible_interfaces[@]}"; do
         if possible_config=$(ifconfig ${possible_interface} 2> /dev/null); then
-            echo "${possible_config}" | grep 'inet ' | awk '{print $2}'
-            break
+            if possible_ip=$(echo "${possible_config}" | grep 'inet ' | awk '{print $2}'); then
+                break
+            fi
         fi
     done
+    if [[ -n "${possible_ip}" ]]; then
+        echo "${possible_ip}"
+    else
+        echo "Could not find a preferred IP" >&2
+        exit 1
+    fi
 }
 
 # Updates the hosts file with the preferred interface ip
@@ -49,4 +57,3 @@ update_hosts_preferred() {
 }
 
 update_hosts_preferred
-
