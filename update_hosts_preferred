@@ -10,11 +10,14 @@
 # @Params: $1 the IP to set
 set_hosts_variable_ip() {
     local PLACEHOLDER_HOSTNAME='variable.ip'
+    local HOSTS_FILE='/etc/hosts'
     local placeholer_line
-    # TODO: Do not update hosts files if no change
-    if placeholer_line=$(cat /etc/hosts | grep ${PLACEHOLDER_HOSTNAME}); then
-        new_placeholder_line=$(echo "${placeholer_line}" | { printf "${1} "; cut -d " " -f2-; } )
-        sudo sed -i '.bak' "s~${placeholer_line}~${new_placeholder_line}~" /etc/hosts
+
+    if placeholer_line=$(cat "${HOSTS_FILE}" | grep ${PLACEHOLDER_HOSTNAME}); then
+        if [[ "${1}" != $(echo "${placeholer_line}" | awk '{print $1}') ]]; then
+            local new_placeholder_line=$(echo "${placeholer_line}" | { printf "${1} "; cut -d " " -f2-; } )
+            sudo sed -i '.bak' "s~${placeholer_line}~${new_placeholder_line}~" /etc/hosts
+        fi
     else
         echo "Could not find the placeholder hostname(\"${PLACEHOLDER_HOSTNAME}\")" >&2
         exit 1
@@ -43,6 +46,7 @@ get_preferred_interface_ip() {
             fi
         fi
     done
+
     if [[ -n "${possible_ip}" ]]; then
         echo "${possible_ip}"
     else
